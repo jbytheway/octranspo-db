@@ -12,6 +12,7 @@ import io
 import datetime
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy import sql
 
 from orm import *
 
@@ -113,3 +114,22 @@ with zipfile.ZipFile(zip_filename) as zip_file:
         sys.stderr.write("\n")
         sys.stderr.flush()
 
+# Have completely finished the import now, but we want to add some convenience
+# columns on top of what the database contains by default
+for route in session.query(Route).all():
+    for direction_id in (0, 1):
+        # Find the most popular headsign for this route and save it as the
+        # modal one
+        trips = session.query(
+            Trip.trip_headsign, sql.func.count('*').label('trip_count')
+            ).filter(Trip.route_id == route.route_id,
+                    Trip.direction_id == direction_id
+            ).group_by(Trip.trip_headsign).order_by('trip_count')[:1]
+        if not trips:
+            continue
+        trip = trips[0]
+        session.add(DirectedRoute(
+            route_id=route.route_id, direction_id=direction_id,
+            route_modal_headsign=trip.trip_headsign))
+
+session.commit()

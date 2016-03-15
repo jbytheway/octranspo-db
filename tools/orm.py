@@ -86,6 +86,16 @@ class Route(Mixin, Base):
     route_id = Column(String, primary_key=True)
     route_short_name = Column(String, index=True)
 
+class DirectedRoute(Mixin, Base):
+    __tablename__ = 'directed_routes'
+
+    ignore_fields = ()
+
+    _id = Column(Integer, primary_key=True)
+    route_id = Column(String, ForeignKey('routes.route_id'), index=True)
+    direction_id = Column(Integer)
+    route_modal_headsign = Column(String)
+
 class Trip(Mixin, Base):
     __tablename__ = 'trips'
 
