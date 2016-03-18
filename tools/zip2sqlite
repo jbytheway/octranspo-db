@@ -116,6 +116,7 @@ with zipfile.ZipFile(zip_filename) as zip_file:
 
 # Have completely finished the import now, but we want to add some convenience
 # columns on top of what the database contains by default
+
 for route in session.query(Route).all():
     for direction_id in (0, 1):
         # Find the most popular headsign for this route and save it as the
@@ -131,5 +132,16 @@ for route in session.query(Route).all():
         session.add(DirectedRoute(
             route_id=route.route_id, direction_id=direction_id,
             route_modal_headsign=trip.trip_headsign))
+
+session.commit()
+
+for trip in session.query(Trip).all():
+    # Store for each trip the last stop_sequence number for efficient access to
+    # last stop in the trip
+    stopTime = session.query(
+        sql.func.max(StopTime.stop_sequence).label('max_stop_sequence')
+        ).filter(StopTime.trip_id == trip.trip_id
+        ).group_by(StopTime.trip_id).one()
+    trip.last_stop_sequence = stopTime.max_stop_sequence
 
 session.commit()

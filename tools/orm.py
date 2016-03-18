@@ -109,6 +109,7 @@ class Trip(Mixin, Base):
     trip_headsign = Column(String)
     direction_id = Column(Integer)
     block_id = Column(Integer)
+    last_stop_sequence = Column(Integer)
 
     def __init__(self, *, trip_id, service_id, **kargs):
         new_id = len(Trip.mapping)
