@@ -1,7 +1,8 @@
 import re
 
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, ForeignKey, Integer, String, Float
+from sqlalchemy import Table, Column, ForeignKey, Integer, String, Float
+from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 
@@ -59,6 +60,13 @@ class ServiceDay(Mixin, Base):
     date = Column(String, index=True)
     service_id = Column(Integer)
 
+route_at_stop_table = Table(
+    'routes_at_stops', Base.metadata,
+    Column('directed_route_id', Integer, ForeignKey('directed_routes._id'),
+        index=True),
+    Column('stop_id', Integer, ForeignKey('stops._id'), index=True)
+)
+
 class Stop(Mixin, Base):
     __tablename__ = 'stops'
 
@@ -71,6 +79,7 @@ class Stop(Mixin, Base):
     stop_name = Column(String)
     stop_lat = Column(Float)
     stop_lon = Column(Float)
+    routes = relationship("DirectedRoute", secondary=route_at_stop_table)
 
     def __init__(self, *, stop_id, **kargs):
         id = len(Stop.mapping)

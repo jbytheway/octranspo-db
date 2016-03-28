@@ -117,6 +117,7 @@ with zipfile.ZipFile(zip_filename) as zip_file:
 # Have completely finished the import now, but we want to add some convenience
 # columns on top of what the database contains by default
 
+sys.stderr.write("Finding most popular headsigns...\n")
 for route in session.query(Route).all():
     for direction_id in (0, 1):
         # Find the most popular headsign for this route and save it as the
@@ -135,6 +136,7 @@ for route in session.query(Route).all():
 
 session.commit()
 
+sys.stderr.write("Finding maximum sequence numbers...\n")
 for trip in session.query(Trip).all():
     # Store for each trip the last stop_sequence number for efficient access to
     # last stop in the trip
@@ -143,5 +145,26 @@ for trip in session.query(Trip).all():
         ).filter(StopTime.trip_id == trip.trip_id
         ).group_by(StopTime.trip_id).one()
     trip.last_stop_sequence = stopTime.max_stop_sequence
+
+session.commit()
+
+sys.stderr.write("Finding routes at each stop...\n")
+# Precompute for every stop the routes that go through it
+routes_at_stop = {}
+
+for stop_time, trip, route, directed_route, stop in session.query(
+        StopTime, Trip, Route, DirectedRoute, Stop
+        ).filter(StopTime.trip_id == Trip.trip_id
+        ).filter(Trip.route_id == Route.route_id
+        ).filter(Route.route_id == DirectedRoute.route_id
+        ).filter(Trip.direction_id == DirectedRoute.direction_id
+        ).filter(StopTime.stop_id == Stop._id
+        ).all():
+    routes_at_stop.setdefault(stop, set()).add(directed_route)
+
+sys.stderr.write("Storing routes at each stop...\n")
+# Now store all those
+for stop, routes in routes_at_stop.items():
+    stop.routes.extend(routes)
 
 session.commit()
