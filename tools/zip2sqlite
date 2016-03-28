@@ -118,6 +118,7 @@ with zipfile.ZipFile(zip_filename) as zip_file:
 # columns on top of what the database contains by default
 
 sys.stderr.write("Finding most popular headsigns...\n")
+sys.stderr.flush()
 for route in session.query(Route).all():
     for direction_id in (0, 1):
         # Find the most popular headsign for this route and save it as the
@@ -137,6 +138,7 @@ for route in session.query(Route).all():
 session.commit()
 
 sys.stderr.write("Finding maximum sequence numbers...\n")
+sys.stderr.flush()
 for trip in session.query(Trip).all():
     # Store for each trip the last stop_sequence number for efficient access to
     # last stop in the trip
@@ -149,6 +151,7 @@ for trip in session.query(Trip).all():
 session.commit()
 
 sys.stderr.write("Finding routes at each stop...\n")
+sys.stderr.flush()
 # Precompute for every stop the routes that go through it
 routes_at_stop = {}
 
@@ -163,8 +166,41 @@ for stop_time, trip, route, directed_route, stop in session.query(
     routes_at_stop.setdefault(stop, set()).add(directed_route)
 
 sys.stderr.write("Storing routes at each stop...\n")
+sys.stderr.flush()
 # Now store all those
 for stop, routes in routes_at_stop.items():
     stop.routes.extend(routes)
+
+session.commit()
+
+sys.stderr.write("Finding stop sequences...\n")
+sys.stderr.flush()
+
+stop_sequences_by_trip = {}
+
+for stop_time, trip in session.query(
+        StopTime, Trip
+        ).filter(StopTime.trip_id == Trip.trip_id
+        ).filter(Trip.route_id == Route.route_id
+        ).order_by(Trip.trip_id, StopTime.stop_sequence).all():
+    stop_sequences_by_trip.setdefault(trip, []).append(stop_time.stop_id)
+
+# Then group the trips by route
+
+trips_by_route = {}
+for trip in stop_sequences_by_trip.keys():
+    trips_by_route.setdefault(trip.route_id, []).append(trip)
+
+sys.stderr.write("Finding representative trips...\n")
+sys.stderr.flush()
+
+# Finally, find the representative trips for each route
+for route, trips in trips_by_route.items():
+    observed_stop_sequences = set()
+    for trip in trips:
+        stop_sequence = tuple(stop_sequences_by_trip[trip])
+        if stop_sequence not in observed_stop_sequences:
+            observed_stop_sequences.add(stop_sequence)
+            trip.is_representative = True
 
 session.commit()

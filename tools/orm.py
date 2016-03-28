@@ -1,7 +1,8 @@
 import re
 
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Table, Column, ForeignKey, Integer, String, Float
+from sqlalchemy import (
+        Table, Column, ForeignKey, Integer, String, Float, Boolean)
 from sqlalchemy.orm import relationship
 
 Base = declarative_base()
@@ -119,6 +120,7 @@ class Trip(Mixin, Base):
     direction_id = Column(Integer)
     block_id = Column(Integer)
     last_stop_sequence = Column(Integer)
+    is_representative = Column(Boolean, nullable=False, default=False)
 
     def __init__(self, *, trip_id, service_id, **kargs):
         new_id = len(Trip.mapping)
