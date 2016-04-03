@@ -8,6 +8,7 @@ $(ROOT).sqlite.gz: data/$(ROOT).sqlite
 
 data/$(ROOT).sqlite: data/$(ROOT).zip $(SCRIPTS)
 	$(CONVERTER) $< $@
+	sqlite3 $@ analyze
 
 data/$(ROOT).zip:
 	mkdir -p $(dir $@)
