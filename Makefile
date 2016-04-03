@@ -9,6 +9,7 @@ $(ROOT).sqlite.gz: data/$(ROOT).sqlite
 data/$(ROOT).sqlite: data/$(ROOT).zip $(SCRIPTS)
 	$(CONVERTER) $< $@
 	sqlite3 $@ analyze
+	sqlite3 $@ "vacuum full;"
 
 data/$(ROOT).zip:
 	mkdir -p $(dir $@)
