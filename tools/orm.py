@@ -3,6 +3,7 @@ import re
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import (
         Table, Column, ForeignKey, Integer, String, Float, Boolean)
+from sqlalchemy.schema import Index
 from sqlalchemy.orm import relationship
 
 Base = declarative_base()
@@ -134,7 +135,7 @@ class StopTime(Mixin, Base):
     ignore_fields = ('departure_time')
 
     id = Column(Integer, primary_key=True)
-    trip_id = Column(Integer, ForeignKey('trips.trip_id'), index=True)
+    trip_id = Column(Integer, ForeignKey('trips.trip_id'))
     arrival_time = Column(Integer) # in minutes from midnight
     stop_id = Column(Integer, ForeignKey('stops._id'), index=True)
     stop_sequence = Column(Integer)
@@ -149,3 +150,6 @@ class StopTime(Mixin, Base):
                 trip_id=trip_id, stop_id=stop_id,
                 arrival_time=arrival_time, **kargs)
 
+
+Index('ix_stop_times_trip_id_stop_sequence',
+        StopTime.trip_id, StopTime.stop_sequence)
