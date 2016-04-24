@@ -1,0 +1,10 @@
+#!/bin/bash
+
+make download
+make
+
+if ! git diff --exit-code &>/dev/null
+then
+  git ci -a -m 'Database update'
+  git push
+fi
