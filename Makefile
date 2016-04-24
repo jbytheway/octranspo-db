@@ -1,6 +1,9 @@
 CONVERTER := tools/zip2sqlite
 SCRIPTS := $(wildcard tools/*.py $(CONVERTER))
 ROOT := octranspo_data
+ZIP := data/$(ROOT).zip
+
+DOWNLOAD = wget -O $(ZIP) http://www.octranspo1.com/files/google_transit.zip
 
 $(ROOT).sqlite.gz: data/$(ROOT).sqlite
 	mkdir -p $(dir $@)
@@ -13,6 +16,10 @@ data/$(ROOT).sqlite: data/$(ROOT).zip $(SCRIPTS)
 
 data/$(ROOT).zip:
 	mkdir -p $(dir $@)
-	wget -O $@ http://www.octranspo1.com/files/google_transit.zip
+	$(DOWNLOAD)
+
+download:
+	mkdir -p $(dir $@)
+	$(DOWNLOAD)
 
 .DELETE_ON_ERROR:
