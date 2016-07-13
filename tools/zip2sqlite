@@ -114,6 +114,19 @@ with zipfile.ZipFile(zip_filename) as zip_file:
         sys.stderr.write("\n")
         sys.stderr.flush()
 
+# Sometimes you get trips with no stops, which is silly
+
+sys.stderr.write("Removing empty trips...\n")
+sys.stderr.flush()
+for trip in session.query(Trip).all():
+    numStops = session.query(StopTime
+        ).filter(StopTime.trip_id == trip.trip_id
+        ).count()
+    if numStops == 0:
+        session.delete(trip)
+
+session.commit()
+
 # Have completely finished the import now, but we want to add some convenience
 # columns on top of what the database contains by default
 
