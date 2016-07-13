@@ -142,11 +142,15 @@ sys.stderr.flush()
 for trip in session.query(Trip).all():
     # Store for each trip the last stop_sequence number for efficient access to
     # last stop in the trip
-    stopTime = session.query(
-        sql.func.max(StopTime.stop_sequence).label('max_stop_sequence')
-        ).filter(StopTime.trip_id == trip.trip_id
-        ).group_by(StopTime.trip_id).one()
-    trip.last_stop_sequence = stopTime.max_stop_sequence
+    try:
+        stopTime = session.query(
+            sql.func.max(StopTime.stop_sequence).label('max_stop_sequence')
+            ).filter(StopTime.trip_id == trip.trip_id
+            ).group_by(StopTime.trip_id).one()
+        trip.last_stop_sequence = stopTime.max_stop_sequence
+    except:
+        sys.stderr.write("Problem with trip id %r\n" % trip.trip_id)
+        raise
 
 session.commit()
 
