@@ -95,10 +95,6 @@ with zipfile.ZipFile(zip_filename) as zip_file:
         sys.stderr.flush()
         with zip_file.open(csv_filename) as csv_file:
             csv_stream = io.TextIOWrapper(csv_file, encoding='utf-8', newline='')
-            if csv_filename != 'stops.txt':
-                # Read the BOM (present in all files but stops, for some
-                # reason)
-                csv_stream.read(1)
             numRows = 0
             for row in csv.DictReader(csv_stream):
                 handler(row, session)
