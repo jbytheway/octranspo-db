@@ -188,8 +188,11 @@ for stop_time, trip, route, directed_route, stop in session.query(
         ).all():
     routes_at_stop.setdefault(stop, set()).add(directed_route)
 
-sys.stderr.write("Storing routes at each stop...\n")
+sys.stderr.write("Storing routes at each stop (total %d stops)...\n" %
+        len(routes_at_stop))
 sys.stderr.flush()
+assert len(routes_at_stop) > 0
+
 # Now store all those
 for stop, routes in routes_at_stop.items():
     stop.routes.extend(routes)
