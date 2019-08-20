@@ -96,6 +96,8 @@ class Route(Mixin, Base):
 
     route_id = Column(String, primary_key=True)
     route_short_name = Column(String, index=True)
+    route_color = Column(String)
+    route_text_color = Column(String)
 
 class DirectedRoute(Mixin, Base):
     __tablename__ = 'directed_routes'
