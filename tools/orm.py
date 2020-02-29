@@ -122,6 +122,7 @@ class Trip(Mixin, Base):
     trip_headsign = Column(String)
     direction_id = Column(Integer)
     block_id = Column(Integer)
+    shape_id = Column(Integer)
     last_stop_sequence = Column(Integer)
     is_representative = Column(Boolean, nullable=False, default=False)
 
