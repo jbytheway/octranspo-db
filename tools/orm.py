@@ -11,6 +11,8 @@ Base = declarative_base()
 def int_or_none(s):
     if s == "":
         return None
+    if isinstance(s, str):
+        s = s.lstrip('E') # Some trips use a value starting with 'E' now
     return int(s)
 
 _converters = {
